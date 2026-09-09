@@ -42,24 +42,6 @@ def salva_messaggio_chat(ruolo, messaggio):
 
 # --- INTERFACCIA GRAFICA ---
 
-# Sidebar per la Lead Generation Manuale o visualizzazione log
-with st.sidebar:
-    st.header("📥 Modulo Contatto Diretto")
-    st.write("Se preferisci, lascia qui i tuoi dati per ricevere un piano di concimazione via email.")
-    with st.form("form_contatto", clear_on_submit=True):
-        c_nome = st.text_input("Nome e Cognome")
-        c_email = st.text_input("Email")
-        c_tel = st.text_input("Telefono")
-        c_coltura = st.text_input("Tipo di Coltura (es. Pescheto, Uliveto)")
-        submit = st.form_submit_button("Invia i dati a Grena")
-        
-        if submit:
-            if c_nome and (c_email or c_tel):
-                salva_contatto(c_nome, c_email, c_tel, c_coltura)
-                st.success("✅ Dati registrati! Ti ricontatteremo presto.")
-            else:
-                st.error("❌ Inserisci almeno il nome e un contatto (Email o Telefono).")
-
 # Inizializza la cronologia della chat
 if "messages" not in st.session_state:
     st.session_state.messages = []
