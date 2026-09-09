@@ -10,7 +10,7 @@ from prompts import SYSTEM_PROMPT
 load_dotenv()
 
 st.set_page_config(page_title="Grena Assistente Virtuale", page_icon="🌱", layout="centered")
-st.title("🌱 Agrismart - Assistente Grena.com")
+# st.title("🌱 Agrismart - Assistente Grena.com")
 
 # Verifica Chiave API
 api_key = os.getenv("ANTHROPIC_API_KEY")
