@@ -12,33 +12,6 @@ load_dotenv()
 st.set_page_config(page_title="Grena Assistente Virtuale", page_icon="🌱", layout="centered")
 # st.title("🌱 Agrismart - Assistente Grena.com")
 
-# --- NUOVO CODICE AGGIORNATO PER AZZERARE IL BRANDING STREAMLIT ---
-hide_streamlit_style = """
-            <style>
-            #MainMenu {visibility: hidden; display: none !important;}
-            footer {visibility: hidden; display: none !important;}
-            header {visibility: hidden; display: none !important;}
-            .stAppDeployButton {display: none !important;}
-            div[data-testid="stStatusWidget"] {visibility: hidden; display: none !important;}
-            
-            /* Rimuove i badge e le barre informative quando l'app è in iframe */
-            [data-testid="stDecoration"], 
-            .viewerBadge_container__1QSob, 
-            .styles_viewerBadge__1yB5_,
-            div[class^="embeddedAppMetaInfoBar_"] {
-                display: none !important;
-                visibility: hidden !important;
-            }
-            
-            /* Forza la chat a occupare tutto lo spazio disponibile in altezza */
-            .block-container {
-                padding-top: 1rem !important;
-                padding-bottom: 1rem !important;
-            }
-            </style>
-            """
-st.markdown(hide_streamlit_style, unsafe_allow_html=True)
-
 # Verifica Chiave API
 api_key = os.getenv("ANTHROPIC_API_KEY")
 if not api_key:
