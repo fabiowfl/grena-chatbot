@@ -42,9 +42,15 @@ def salva_messaggio_chat(ruolo, messaggio):
 
 # --- INTERFACCIA GRAFICA ---
 
-# Inizializza la cronologia della chat
+# Inizializza la cronologia della chat con un messaggio di benvenuto predefinito
 if "messages" not in st.session_state:
-    st.session_state.messages = []
+    st.session_state.messages = [
+        {
+            "role": "assistant", 
+            "content": "🌱 **Ciao! Sono Agrismart Grena**, il tuo assistente virtuale personale.\n\nSono qui per aiutarti a conoscere al meglio i nostri concimi biologici e biostimolanti naturali, consigliarti le migliori soluzioni per le tue colture e indicarti le tempistiche corrette di utilizzo. Come posso esserti utile oggi?"
+        }
+    ]
+
 
 # Mostra i messaggi precedenti
 for message in st.session_state.messages:
