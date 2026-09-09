@@ -12,6 +12,17 @@ load_dotenv()
 st.set_page_config(page_title="Grena Assistente Virtuale", page_icon="🌱", layout="centered")
 # st.title("🌱 Agrismart - Assistente Grena.com")
 
+# --- CODICE PER NASCONDERE IL LOGO E IL MENU STREAMLIT ---
+hide_streamlit_style = """
+            <style>
+            #MainMenu {visibility: hidden;}
+            footer {visibility: hidden;}
+            header {visibility: hidden;}
+            .stAppDeployButton {display: none !important;}
+            </style>
+            """
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
 # Verifica Chiave API
 api_key = os.getenv("ANTHROPIC_API_KEY")
 if not api_key:
