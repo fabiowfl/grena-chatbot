@@ -42,6 +42,9 @@ SYSTEM_PROMPT_CONSTRAINTS = """
 - Sii sintetico e organizza le risposte lunghe in punti elenco per facilitare la lettura da smartphone o chat web.
 """
 
+# Unione di tutti i blocchi in un unico prompt di sistema solido per Claude
+SYSTEM_PROMPT = f"{SYSTEM_PROMPT_ROLE}\n{SYSTEM_PROMPT_CONTEXT}\n{SYSTEM_PROMPT_OPERATIONS}\n{SYSTEM_PROMPT_COMMERCIAL}\n{SYSTEM_PROMPT_CONSTRAINTS}"
+
 # 6. Definizione dello strumento (tool) per la raccolta strutturata dei contatti
 TOOLS = [
     {
@@ -75,6 +78,3 @@ TOOLS = [
         }
     }
 ]
-
-# Unione di tutti i blocchi in un unico prompt di sistema solido per Claude
-SYSTEM_PROMPT = f"{SYSTEM_PROMPT_ROLE}\n{SYSTEM_PROMPT_CONTEXT}\n{SYSTEM_PROMPT_OPERATIONS}\n{SYSTEM_PROMPT_COMMERCIAL}\n{SYSTEM_PROMPT_CONSTRAINTS}"
