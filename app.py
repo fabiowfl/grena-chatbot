@@ -49,8 +49,49 @@ def invia_email_lead(contatto, cronologia_messaggi):
     destinatario = os.getenv("EMAIL_DESTINATARIO")
 
     if not all([smtp_host, smtp_user, smtp_password, destinatario]):
-        # Configurazione mancante: non blocchiamo la chat, ma segnaliamo nei log
         print("⚠️ Configurazione SMTP incompleta: email non inviata.")
+        return False
+
+    corpo = f"""NUOVO CONTATTO DA AGRISMART (Assistente Grena.com)
+
+--- DATI CLIENTE ---
+Nome: {contatto.get('nome', 'Non fornito')}
+Email: {contatto.get('email', 'Non fornita')}
+Telefono: {contatto.get('telefono', 'Non fornito')}
+Coltura di interesse: {contatto.get('coltura', 'Non specificata')}
+Località: {contatto.get('localita', 'Non specificata')}
+Data: {datetime.now().strftime('%d/%m/%Y %H:%M')}
+
+--- TESTO DELLA CONVERSAZIONE ---
+"""
+    for msg in cronologia_messaggi:
+        ruolo = "Cliente" if msg["role"] == "user" else "Agrismart"
+        corpo += f"\n[{ruolo}]: {msg['content']}\n"
+
+    msg = MIMEMultipart()
+    msg["From"] = smtp_user
+    msg["To"] = destinatario
+    msg["Subject"] = f"🌱 Nuovo contatto Agrismart: {contatto.get('nome', 'Cliente')}"
+    msg.attach(MIMEText(corpo, "plain", "utf-8"))
+
+    try:
+        # Timeout esplicito di 10 secondi: se il server non risponde, falliamo
+        # subito invece di restare bloccati indefinitamente.
+        if smtp_port == 465:
+            # Porta 465: SSL diretto fin dall'inizio (nessun STARTTLS)
+            server = smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=10)
+        else:
+            # Porta 587 (o altre): connessione in chiaro, poi upgrade con STARTTLS
+            server = smtplib.SMTP(smtp_host, smtp_port, timeout=10)
+            server.starttls()
+
+        server.login(smtp_user, smtp_password)
+        server.sendmail(smtp_user, destinatario, msg.as_string())
+        server.quit()
+        print("✅ Email inviata con successo.")
+        return True
+    except Exception as e:
+        print(f"⚠️ Errore nell'invio email: {e}")
         return False
 
     # Corpo dell'email: prima i contatti, poi il dialogo completo
