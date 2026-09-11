@@ -101,6 +101,20 @@ if "messages" not in st.session_state:
 if "email_lead_inviata" not in st.session_state:
     st.session_state.email_lead_inviata = False
 
+# --- PANNELLO DI DEBUG TEMPORANEO (rimuovere quando tutto funziona) ---
+with st.sidebar:
+    st.subheader("🔧 Debug")
+    if os.path.isfile("contatti.csv"):
+        with open("contatti.csv", "rb") as f:
+            st.download_button("📥 Scarica contatti.csv", f, file_name="contatti.csv")
+    else:
+        st.caption("contatti.csv non ancora creato in questa sessione")
+    if os.path.isfile("storico_chat.csv"):
+        with open("storico_chat.csv", "rb") as f:
+            st.download_button("📥 Scarica storico_chat.csv", f, file_name="storico_chat.csv")
+    else:
+        st.caption("storico_chat.csv non ancora creato in questa sessione")
+
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
@@ -159,8 +173,12 @@ if user_input := st.chat_input("Come posso aiutarti con la tua coltura?"):
                             contatto.get("localita", "")
                         )
                         if not st.session_state.email_lead_inviata:
-                            invia_email_lead(contatto, st.session_state.messages)
+                            esito = invia_email_lead(contatto, st.session_state.messages)
                             st.session_state.email_lead_inviata = True
+                            if esito:
+                                st.sidebar.success("✅ Email di lead inviata correttamente")
+                            else:
+                                st.sidebar.error("❌ Invio email fallito — controlla i Secrets SMTP")
 
                         tool_results.append({
                             "type": "tool_result",
