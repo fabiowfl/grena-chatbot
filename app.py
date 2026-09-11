@@ -68,26 +68,26 @@ Data: {datetime.now().strftime('%d/%m/%Y %H:%M')}
         ruolo = "Cliente" if msg["role"] == "user" else "Agrismart"
         corpo += f"\n[{ruolo}]: {msg['content']}\n"
 
-    msg = MIMEMultipart()
-    msg["From"] = smtp_user
-    msg["To"] = destinatario
-    msg["Subject"] = f"🌱 Nuovo contatto Agrismart: {contatto.get('nome', 'Cliente')}"
-    msg.attach(MIMEText(corpo, "plain", "utf-8"))
+# Supporta più destinatari separati da virgola nei Secrets
+# (es. "commerciale@grena.com,mario@grena.com")
+lista_destinatari = [e.strip() for e in destinatario.split(",") if e.strip()]
 
-    try:
-        # Timeout esplicito di 10 secondi: se il server non risponde, falliamo
-        # subito invece di restare bloccati indefinitamente.
-        if smtp_port == 465:
-            # Porta 465: SSL diretto fin dall'inizio (nessun STARTTLS)
-            server = smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=10)
-        else:
-            # Porta 587 (o altre): connessione in chiaro, poi upgrade con STARTTLS
-            server = smtplib.SMTP(smtp_host, smtp_port, timeout=10)
-            server.starttls()
+msg = MIMEMultipart()
+msg["From"] = smtp_user
+msg["To"] = ", ".join(lista_destinatari)
+msg["Subject"] = f"🌱 Nuovo contatto Agrismart: {contatto.get('nome', 'Cliente')}"
+msg.attach(MIMEText(corpo, "plain", "utf-8"))
 
-        server.login(smtp_user, smtp_password)
-        server.sendmail(smtp_user, destinatario, msg.as_string())
-        server.quit()
+try:
+    if smtp_port == 465:
+        server = smtplib.SMTP_SSL(smtp_host, smtp_port, timeout=10)
+    else:
+        server = smtplib.SMTP(smtp_host, smtp_port, timeout=10)
+        server.starttls()
+
+    server.login(smtp_user, smtp_password)
+    server.sendmail(smtp_user, lista_destinatari, msg.as_string())
+    server.quit()
         print("✅ Email inviata con successo.")
         return True
     except Exception as e:
