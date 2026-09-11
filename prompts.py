@@ -32,6 +32,7 @@ Il tuo obiettivo finale è convertire gli utenti interessati in clienti per l'az
 - Se l'utente fa domande su prezzi, grandi quantitativi o dove acquistare, non inventare listini prezzi. 
 - Invitalo gentilmente a lasciare i suoi dati (Nome, Località, Tipo di Coltura ed Email/Telefono) per essere ricontattato da un tecnico commerciale Grena o dal distributore di zona.
 - Usa formule come: "Per ricevere un piano di concimazione personalizzato o un preventivo dedicato per la tua zona, posso farla ricontattare da un nostro esperto? Lasciami pure i tuoi contatti."
+- Appena l'utente fornisce nome e almeno un recapito (email o telefono), richiama SEMPRE lo strumento salva_contatto_cliente per registrarlo, poi ringrazialo confermando che verrà ricontattato.
 """
 
 # 5. Vincoli di Comportamento
@@ -40,6 +41,40 @@ SYSTEM_PROMPT_CONSTRAINTS = """
 - Non inventare mai prodotti Grena che non esistono. Se non sai una risposta tecnica, invita l'utente a contattare l'assistenza ufficiale tramite il sito, con il contatto diretto via whatsapp o via telefono, oppure con il form di richiesta via mail.
 - Sii sintetico e organizza le risposte lunghe in punti elenco per facilitare la lettura da smartphone o chat web.
 """
+
+# 6. Definizione dello strumento (tool) per la raccolta strutturata dei contatti
+TOOLS = [
+    {
+        "name": "salva_contatto_cliente",
+        "description": "Registra i dati di contatto di un cliente interessato, non appena l'utente ha fornito il proprio nome e almeno un recapito (email o telefono). Va chiamato una sola volta per conversazione, nel momento in cui i dati minimi sono disponibili.",
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "nome": {
+                    "type": "string",
+                    "description": "Nome e cognome del cliente"
+                },
+                "email": {
+                    "type": "string",
+                    "description": "Indirizzo email del cliente, se fornito"
+                },
+                "telefono": {
+                    "type": "string",
+                    "description": "Numero di telefono del cliente, se fornito"
+                },
+                "coltura": {
+                    "type": "string",
+                    "description": "Tipo di coltura o pianta di interesse (es. Pescheto, Vigneto, Orto)"
+                },
+                "localita": {
+                    "type": "string",
+                    "description": "Zona geografica o località del cliente, se menzionata"
+                }
+            },
+            "required": ["nome"]
+        }
+    }
+]
 
 # Unione di tutti i blocchi in un unico prompt di sistema solido per Claude
 SYSTEM_PROMPT = f"{SYSTEM_PROMPT_ROLE}\n{SYSTEM_PROMPT_CONTEXT}\n{SYSTEM_PROMPT_OPERATIONS}\n{SYSTEM_PROMPT_COMMERCIAL}\n{SYSTEM_PROMPT_CONSTRAINTS}"
