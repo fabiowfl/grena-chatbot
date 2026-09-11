@@ -142,19 +142,33 @@ if "messages" not in st.session_state:
 if "email_lead_inviata" not in st.session_state:
     st.session_state.email_lead_inviata = False
 
-# --- PANNELLO DI DEBUG TEMPORANEO (rimuovere quando tutto funziona) ---
+# --- PANNELLO DI DEBUG PROTETTO DA PASSWORD ---
+if "debug_sbloccato" not in st.session_state:
+    st.session_state.debug_sbloccato = False
+
 with st.sidebar:
     st.subheader("🔧 Debug")
-    if os.path.isfile("contatti.csv"):
-        with open("contatti.csv", "rb") as f:
-            st.download_button("📥 Scarica contatti.csv", f, file_name="contatti.csv")
+
+    if not st.session_state.debug_sbloccato:
+        password_inserita = st.text_input("Password admin", type="password", key="debug_pwd")
+        if password_inserita:
+            if password_inserita == os.getenv("DEBUG_PASSWORD"):
+                st.session_state.debug_sbloccato = True
+                st.rerun()
+            else:
+                st.error("Password errata")
     else:
-        st.caption("contatti.csv non ancora creato in questa sessione")
-    if os.path.isfile("storico_chat.csv"):
-        with open("storico_chat.csv", "rb") as f:
-            st.download_button("📥 Scarica storico_chat.csv", f, file_name="storico_chat.csv")
-    else:
-        st.caption("storico_chat.csv non ancora creato in questa sessione")
+        if os.path.isfile("contatti.csv"):
+            with open("contatti.csv", "rb") as f:
+                st.download_button("📥 Scarica contatti.csv", f, file_name="contatti.csv")
+        else:
+            st.caption("contatti.csv non ancora creato in questa sessione")
+
+        if os.path.isfile("storico_chat.csv"):
+            with open("storico_chat.csv", "rb") as f:
+                st.download_button("📥 Scarica storico_chat.csv", f, file_name="storico_chat.csv")
+        else:
+            st.caption("storico_chat.csv non ancora creato in questa sessione")
 
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
