@@ -14,27 +14,26 @@ jobs:
           pip install playwright
           playwright install --with-deps chromium
 
-      - name: Visita l'app per tenerla sveglia
+      - name: Visita app e risveglia se necessario
         run: |
-          python - <<'EOF'
+          cat > wake.py << 'PYEOF'
           from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 
-with sync_playwright() as p:
-    browser = p.chromium.launch()
-    page = browser.new_page()
-    page.goto("https://grena-chatbot.streamlit.app/", timeout=60000)
+          with sync_playwright() as p:
+              browser = p.chromium.launch()
+              page = browser.new_page()
+              page.goto("https://grena-chatbot.streamlit.app/", timeout=60000)
 
-    try:
-        # Se l'app è in sleep, compare questo pulsante: lo clicchiamo per risvegliarla
-        wake_button = page.get_by_text("Yes, get this app back up!")
-        wake_button.wait_for(state="visible", timeout=8000)
-        wake_button.click()
-        print("App era in sleep: risveglio avviato, attendo il caricamento completo...")
-        page.wait_for_timeout(60000)  # il risveglio può richiedere fino a 1-2 minuti
-    except PlaywrightTimeoutError:
-        print("App già sveglia, nessuna azione necessaria.")
+              try:
+                  wake_button = page.get_by_text("Yes, get this app back up!")
+                  wake_button.wait_for(state="visible", timeout=8000)
+                  wake_button.click()
+                  print("App era in sleep: risveglio avviato, attesa caricamento completo...")
+                  page.wait_for_timeout(60000)
+              except PlaywrightTimeoutError:
+                  print("App gia sveglia, nessuna azione necessaria.")
 
-    # Lascia la pagina aperta qualche secondo in più per consolidare la sessione WebSocket
-    page.wait_for_timeout(8000)
-    browser.close()
-          EOF
+              page.wait_for_timeout(8000)
+              browser.close()
+          PYEOF
+          python wake.py
