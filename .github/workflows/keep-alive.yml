@@ -1,0 +1,28 @@
+name: Keep Agrismart Awake
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Installa Playwright
+        run: |
+          pip install playwright
+          playwright install --with-deps chromium
+
+      - name: Visita l'app per tenerla sveglia
+        run: |
+          python - <<'EOF'
+          from playwright.sync_api import sync_playwright
+
+          with sync_playwright() as p:
+              browser = p.chromium.launch()
+              page = browser.new_page()
+              page.goto("https://grena-chatbot.streamlit.app/", timeout=60000)
+              page.wait_for_timeout(8000)  # aspetta che la sessione WebSocket si stabilizzi
+              browser.close()
+          EOF
