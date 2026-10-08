@@ -2,12 +2,15 @@ import streamlit as st
 import os
 import csv
 import smtplib
+import gspread
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 from anthropic import Anthropic
 from dotenv import load_dotenv
 from prompts import SYSTEM_PROMPT, TOOLS
+from google.oauth2.service_account import Credentials
+from zoneinfo import ZoneInfo
 
 load_dotenv()
 
@@ -39,6 +42,36 @@ def salva_messaggio_chat(ruolo, messaggio):
         if not file_exists:
             writer.writerow(["Data", "Ruolo", "Messaggio"])
         writer.writerow([datetime.now().strftime("%Y-%m-%d %H:%M:%S"), ruolo, messaggio])
+
+def salva_lead_su_sheet(contatto, cronologia_messaggi, email_inviata):
+    """Archivia il lead su Google Sheets. Ritorna True se il salvataggio riesce."""
+    try:
+        creds = Credentials.from_service_account_info(
+            dict(st.secrets["gcp_service_account"]),
+            scopes=["https://www.googleapis.com/auth/spreadsheets"],
+        )
+        ws = gspread.authorize(creds).open_by_key(os.getenv("GSHEET_ID")).sheet1
+        dialogo = "\n".join(
+            f"[{'Cliente' if m['role'] == 'user' else 'Agrismart'}]: {m['content']}"
+            for m in cronologia_messaggi
+        )[:45000]  # limite di 50.000 caratteri per cella
+        ws.append_row(
+            [
+                datetime.now(ZoneInfo("Europe/Rome")).strftime("%Y-%m-%d %H:%M"),
+                contatto.get("nome", ""),
+                contatto.get("email", ""),
+                contatto.get("telefono", ""),
+                contatto.get("coltura", ""),
+                contatto.get("localita", ""),
+                "SI" if email_inviata else "NO",
+                dialogo,
+            ],
+            value_input_option="RAW",
+        )
+        return True
+    except Exception as e:
+        print(f"⚠️ Errore salvataggio su Google Sheets: {e}")
+        return False
 
 def invia_email_lead(contatto, cronologia_messaggi):
     """Invia un'email con i dati del contatto e il testo completo della conversazione"""
@@ -233,11 +266,19 @@ if user_input := st.chat_input("Come posso aiutarti con la tua coltura?"):
                         )
                         if not st.session_state.email_lead_inviata:
                             esito = invia_email_lead(contatto, st.session_state.messages)
-                            st.session_state.email_lead_inviata = True
-                            if esito:
-                                st.sidebar.success("✅ Email di lead inviata correttamente")
-                            else:
-                                st.sidebar.error("❌ Invio email fallito — controlla i Secrets SMTP")
+                            salvato = salva_lead_su_sheet(contatto, st.session_state.messages, esito)
+                            # Il flag scatta se almeno uno dei due canali ha funzionato
+                            if esito or salvato:
+                                st.session_state.email_lead_inviata = True
+                            if st.session_state.debug_sbloccato:
+                                if esito:
+                                    st.sidebar.success("✅ Email di lead inviata correttamente")
+                                else:
+                                    st.sidebar.error("❌ Invio email fallito — controlla i Secrets SMTP")
+                                if salvato:
+                                    st.sidebar.success("✅ Lead salvato su Google Sheets")
+                                else:
+                                    st.sidebar.error("❌ Salvataggio su Google Sheets fallito")
 
                         tool_results.append({
                             "type": "tool_result",
