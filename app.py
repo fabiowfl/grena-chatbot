@@ -170,15 +170,15 @@ with st.sidebar:
             if not esito_lead["email"] and st.session_state.get("ultimo_errore_email"):
                 st.code(st.session_state.ultimo_errore_email)
             st.write("✅ Salvato su Google Sheets" if esito_lead["sheet"] else "❌ Google Sheets NON salvato")
-        if not esito_lead["sheet"] and st.session_state.get("ultimo_errore_sheet"):
-            st.code(st.session_state.ultimo_errore_sheet)
+            if not esito_lead["sheet"] and st.session_state.get("ultimo_errore_sheet"):
+                st.code(st.session_state.ultimo_errore_sheet)
         else:
             st.caption("Nessun lead gestito in questa sessione")
 
         st.link_button("📊 Apri Google Sheet", f"https://docs.google.com/spreadsheets/d/{os.getenv('GSHEET_ID')}")
 
         if st.button("🔄 Azzera chat di test"):
-            for chiave in ("messages", "email_lead_inviata", "ultimo_esito", "ultimo_errore_email"):
+            for chiave in ("messages", "email_lead_inviata", "ultimo_esito", "ultimo_errore_email", "ultimo_errore_sheet"):
                 st.session_state.pop(chiave, None)
             st.rerun()
 
