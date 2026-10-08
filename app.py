@@ -131,41 +131,6 @@ Data: {datetime.now().strftime('%d/%m/%Y %H:%M')}
         print(f"⚠️ Errore nell'invio email: {e}")
         return False
 
-    # Corpo dell'email: prima i contatti, poi il dialogo completo
-    corpo = f"""NUOVO CONTATTO DA AGRISMART (Assistente Grena.com)
-
---- DATI CLIENTE ---
-Nome: {contatto.get('nome', 'Non fornito')}
-Email: {contatto.get('email', 'Non fornita')}
-Telefono: {contatto.get('telefono', 'Non fornito')}
-Coltura di interesse: {contatto.get('coltura', 'Non specificata')}
-Località: {contatto.get('localita', 'Non specificata')}
-Data: {datetime.now().strftime('%d/%m/%Y %H:%M')}
-
---- TESTO DELLA CONVERSAZIONE ---
-"""
-    for msg in cronologia_messaggi:
-        ruolo = "Cliente" if msg["role"] == "user" else "Agrismart"
-        corpo += f"\n[{ruolo}]: {msg['content']}\n"
-
-    msg = MIMEMultipart()
-    msg["From"] = smtp_user
-    msg["To"] = destinatario
-    msg["Subject"] = f"🌱 Nuovo contatto Agrismart: {contatto.get('nome', 'Cliente')}"
-    msg.attach(MIMEText(corpo, "plain", "utf-8"))
-
-    try:
-        server = smtplib.SMTP(smtp_host, smtp_port)
-        server.starttls()
-        server.login(smtp_user, smtp_password)
-        server.sendmail(smtp_user, destinatario, msg.as_string())
-        server.quit()
-        return True
-    except Exception as e:
-        print(f"⚠️ Errore nell'invio email: {e}")
-        return False
-
-
 # --- INTERFACCIA GRAFICA ---
 
 if "messages" not in st.session_state:
