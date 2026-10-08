@@ -3,6 +3,7 @@ import os
 import csv
 import smtplib
 import gspread
+import json
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
