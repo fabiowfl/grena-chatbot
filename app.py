@@ -71,6 +71,7 @@ def salva_lead_su_sheet(contatto, cronologia_messaggi, email_inviata):
         return True
     except Exception as e:
         print(f"⚠️ Errore salvataggio su Google Sheets: {e}")
+        st.session_state.ultimo_errore_sheet = f"{type(e).__name__}: {e}"
         return False
 
 def invia_email_lead(contatto, cronologia_messaggi):
