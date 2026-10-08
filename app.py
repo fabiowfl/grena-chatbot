@@ -129,6 +129,7 @@ Data: {datetime.now().strftime('%d/%m/%Y %H:%M')}
         return True
     except Exception as e:
         print(f"⚠️ Errore nell'invio email: {e}")
+        st.session_state.ultimo_errore_email = str(e)
         return False
 
 # --- INTERFACCIA GRAFICA ---
