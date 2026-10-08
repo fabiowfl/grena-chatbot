@@ -48,7 +48,7 @@ def salva_lead_su_sheet(contatto, cronologia_messaggi, email_inviata):
     """Archivia il lead su Google Sheets. Ritorna True se il salvataggio riesce."""
     try:
         creds = Credentials.from_service_account_info(
-            dict(st.secrets["gcp_service_account"]),
+            json.loads(st.secrets["GCP_SERVICE_ACCOUNT_JSON"]),
             scopes=["https://www.googleapis.com/auth/spreadsheets"],
         )
         ws = gspread.authorize(creds).open_by_key(os.getenv("GSHEET_ID")).sheet1
