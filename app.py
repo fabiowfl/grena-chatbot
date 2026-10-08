@@ -161,6 +161,24 @@ with st.sidebar:
             else:
                 st.error("Password errata")
     else:
+        # Stato dell'ultimo lead, visibile anche dopo altri messaggi
+        esito_lead = st.session_state.get("ultimo_esito")
+        if esito_lead:
+            st.caption(f"Ultimo lead alle {esito_lead['ora']}")
+            st.write("✅ Email inviata" if esito_lead["email"] else "❌ Email NON inviata")
+            if not esito_lead["email"] and st.session_state.get("ultimo_errore_email"):
+                st.code(st.session_state.ultimo_errore_email)
+            st.write("✅ Salvato su Google Sheets" if esito_lead["sheet"] else "❌ Google Sheets NON salvato")
+        else:
+            st.caption("Nessun lead gestito in questa sessione")
+
+        st.link_button("📊 Apri Google Sheet", f"https://docs.google.com/spreadsheets/d/{os.getenv('GSHEET_ID')}")
+
+        if st.button("🔄 Azzera chat di test"):
+            for chiave in ("messages", "email_lead_inviata", "ultimo_esito", "ultimo_errore_email"):
+                st.session_state.pop(chiave, None)
+            st.rerun()
+
         if os.path.isfile("contatti.csv"):
             with open("contatti.csv", "rb") as f:
                 st.download_button("📥 Scarica contatti.csv", f, file_name="contatti.csv")
@@ -233,18 +251,14 @@ if user_input := st.chat_input("Come posso aiutarti con la tua coltura?"):
                         if not st.session_state.email_lead_inviata:
                             esito = invia_email_lead(contatto, st.session_state.messages)
                             salvato = salva_lead_su_sheet(contatto, st.session_state.messages, esito)
+                            st.session_state.ultimo_esito = {
+                                "email": esito,
+                                "sheet": salvato,
+                                "ora": datetime.now(ZoneInfo("Europe/Rome")).strftime("%H:%M:%S"),
+                            }
                             # Il flag scatta se almeno uno dei due canali ha funzionato
                             if esito or salvato:
                                 st.session_state.email_lead_inviata = True
-                            if st.session_state.debug_sbloccato:
-                                if esito:
-                                    st.sidebar.success("✅ Email di lead inviata correttamente")
-                                else:
-                                    st.sidebar.error("❌ Invio email fallito — controlla i Secrets SMTP")
-                                if salvato:
-                                    st.sidebar.success("✅ Lead salvato su Google Sheets")
-                                else:
-                                    st.sidebar.error("❌ Salvataggio su Google Sheets fallito")
 
                         tool_results.append({
                             "type": "tool_result",
